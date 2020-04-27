@@ -25,6 +25,7 @@ export default function model (
   if (process.env.NODE_ENV !== 'production') {
     // inputs with type="file" are read only and setting the input's
     // value will throw an error.
+    // 处理的<input type="file" />的v-model情况
     if (tag === 'input' && type === 'file') {
       warn(
         `<${el.tag} v-model="${value}" type="file">:\n` +
@@ -146,6 +147,7 @@ function genDefaultModel (
     }
   }
 
+  // 获取v-model的修饰符，lazy使用change事件代替input，number进行输入的数字校验，trim输入过滤首尾空格
   const { lazy, number, trim } = modifiers || {}
   const needCompositionGuard = !lazy && type !== 'range'
   const event = lazy
@@ -154,6 +156,7 @@ function genDefaultModel (
       ? RANGE_TOKEN
       : 'input'
 
+  // 获取事件回调中获取到的输入值并根据修饰符不同处理
   let valueExpression = '$event.target.value'
   if (trim) {
     valueExpression = `$event.target.value.trim()`
@@ -162,11 +165,14 @@ function genDefaultModel (
     valueExpression = `_n(${valueExpression})`
   }
 
+  // 根据值的类型做不同处理一般是赋值给v-model绑定变量
+  // 比如 v-model="message"，则会生成 if($event.target.composing)return;message=$event.target.value 的code
   let code = genAssignmentCode(value, valueExpression)
   if (needCompositionGuard) {
     code = `if($event.target.composing)return;${code}`
   }
 
+  // 这里已经很明朗了，就是给当前v-model元素绑定了该属性，并绑定了一个input事件监听数据变化
   addProp(el, 'value', `(${value})`)
   addHandler(el, event, code, null, true)
   if (trim || number) {

@@ -16,6 +16,7 @@ import {
   isServerRendering
 } from '../util/index'
 
+// 数组的所有方法名数组
 const arrayKeys = Object.getOwnPropertyNames(arrayMethods)
 
 /**
@@ -24,6 +25,7 @@ const arrayKeys = Object.getOwnPropertyNames(arrayMethods)
  */
 export let shouldObserve: boolean = true
 
+// 控制在observe函数中是否把值变成Observer对象
 export function toggleObserving (value: boolean) {
   shouldObserve = value
 }
@@ -43,15 +45,20 @@ export class Observer {
     this.value = value
     this.dep = new Dep()
     this.vmCount = 0
+    // 为被响应式的对象增加__ob__属性，值为Observer实例
     def(value, '__ob__', this)
     if (Array.isArray(value)) {
+      // 如果有浏览器支持__proto__属性，则可以直接修改原型
       if (hasProto) {
         protoAugment(value, arrayMethods)
       } else {
+        // 将arrayMethods中重写的方法添加到当前数组上，以便触发响应式
         copyAugment(value, arrayMethods, arrayKeys)
       }
+      // 对数组的每个元素进行响应式
       this.observeArray(value)
     } else {
+      // 如果是对象，则对其每个键进行响应式
       this.walk(value)
     }
   }
@@ -108,10 +115,12 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
  * or the existing observer if the value already has one.
  */
 export function observe (value: any, asRootData: ?boolean): Observer | void {
+  // 排除非普通对象和VNode节点
   if (!isObject(value) || value instanceof VNode) {
     return
   }
   let ob: Observer | void
+  // 如果已经添加过直接返回
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
     ob = value.__ob__
   } else if (
@@ -141,6 +150,7 @@ export function defineReactive (
 ) {
   const dep = new Dep()
 
+  // 如果该对象的这个键不可修改，则直接返回
   const property = Object.getOwnPropertyDescriptor(obj, key)
   if (property && property.configurable === false) {
     return
@@ -153,6 +163,7 @@ export function defineReactive (
     val = obj[key]
   }
 
+  // 递归监听其子对象（如果有的话）
   let childOb = !shallow && observe(val)
   Object.defineProperty(obj, key, {
     enumerable: true,
@@ -160,8 +171,11 @@ export function defineReactive (
     get: function reactiveGetter () {
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
+        // 依赖收集
+        // 将当前的watcher加入当前响应式对象的deps属性中
         dep.depend()
         if (childOb) {
+          // 将当前对象的子对象也注入依赖
           childOb.dep.depend()
           if (Array.isArray(value)) {
             dependArray(value)
@@ -173,21 +187,25 @@ export function defineReactive (
     set: function reactiveSetter (newVal) {
       const value = getter ? getter.call(obj) : val
       /* eslint-disable no-self-compare */
+      // 如果值不变，直接返回，提升性能
       if (newVal === value || (newVal !== newVal && value !== value)) {
         return
       }
       /* eslint-enable no-self-compare */
+      // 自定义钩子，方便对某些响应式对象赋值时执行定制化操作（对值的校验、警告）
       if (process.env.NODE_ENV !== 'production' && customSetter) {
         customSetter()
       }
       // #7981: for accessor properties without setter
       if (getter && !setter) return
       if (setter) {
+        // 修改为新值
         setter.call(obj, newVal)
       } else {
         val = newVal
       }
       childOb = !shallow && observe(newVal)
+      // 派发更新
       dep.notify()
     }
   })
@@ -198,7 +216,9 @@ export function defineReactive (
  * triggers change notification if the property doesn't
  * already exist.
  */
+// 暴露的Vue.$set方法，用于将一个对象的新属性设为响应式
 export function set (target: Array<any> | Object, key: any, val: any): any {
+  // 处理target的异常情况（undefined、原始值）
   if (process.env.NODE_ENV !== 'production' &&
     (isUndef(target) || isPrimitive(target))
   ) {
@@ -209,6 +229,7 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     target.splice(key, 1, val)
     return val
   }
+  // 如果已经存在的属性，修改后直接返回就好
   if (key in target && !(key in Object.prototype)) {
     target[key] = val
     return val
@@ -221,11 +242,13 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     )
     return val
   }
+  // 如果不存在__ob__属性，则修改值后直接返回，不做响应式
   if (!ob) {
     target[key] = val
     return val
   }
   defineReactive(ob.value, key, val)
+  // 派发更新
   ob.dep.notify()
   return val
 }
@@ -233,6 +256,7 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
 /**
  * Delete a property and trigger change if necessary.
  */
+// 暴露的Vue.$del方法，删除一个对象的属性，并在必要时触发更新
 export function del (target: Array<any> | Object, key: any) {
   if (process.env.NODE_ENV !== 'production' &&
     (isUndef(target) || isPrimitive(target))

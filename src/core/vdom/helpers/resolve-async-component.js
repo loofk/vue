@@ -27,6 +27,7 @@ function ensureCtor (comp: any, base) {
     : comp
 }
 
+// 创建一个占位的VNode注释节点
 export function createAsyncPlaceholder (
   factory: Function,
   data: ?VNodeData,
@@ -44,6 +45,7 @@ export function resolveAsyncComponent (
   factory: Function,
   baseCtor: Class<Component>
 ): Class<Component> | void {
+  // 如果定义了高级异步组件的error组件
   if (isTrue(factory.error) && isDef(factory.errorComp)) {
     return factory.errorComp
   }
@@ -58,6 +60,8 @@ export function resolveAsyncComponent (
     factory.owners.push(owner)
   }
 
+  // 如果设置了高级异步组件的loading组件且loading条件为真
+  // 会在延时到后，将factory.loading置为true，再次走到resolveAsyncComponent时，会返回factory.loadingComp
   if (isTrue(factory.loading) && isDef(factory.loadingComp)) {
     return factory.loadingComp
   }
@@ -88,6 +92,8 @@ export function resolveAsyncComponent (
       }
     }
 
+    // 异步组件加载成功，这时的sync被置为false，强制重新渲染，会再次执行到resolveAsyncComponent
+    // 这时直接返回factory.resolved
     const resolve = once((res: Object | Class<Component>) => {
       // cache resolved
       factory.resolved = ensureCtor(res, baseCtor)
@@ -100,6 +106,8 @@ export function resolveAsyncComponent (
       }
     })
 
+    // 异步组件加载失败时，执行reject函数，将factory.error置为true，同时重新渲染，又会再次执行到resolveAsyncComponent
+    // 这时直接返回factory.errorComp
     const reject = once(reason => {
       process.env.NODE_ENV !== 'production' && warn(
         `Failed to resolve async component: ${String(factory)}` +
@@ -116,6 +124,7 @@ export function resolveAsyncComponent (
     if (isObject(res)) {
       if (isPromise(res)) {
         // () => Promise
+        // Promise异步组件情况
         if (isUndef(factory.resolved)) {
           res.then(resolve, reject)
         }
@@ -128,6 +137,7 @@ export function resolveAsyncComponent (
 
         if (isDef(res.loading)) {
           factory.loadingComp = ensureCtor(res.loading, baseCtor)
+          // delay设为0时，直接置为true，最后返回factory.loadingComp
           if (res.delay === 0) {
             factory.loading = true
           } else {
@@ -141,6 +151,7 @@ export function resolveAsyncComponent (
           }
         }
 
+        // 如果加载超时，直接执行reject函数，返回factory.errorComp
         if (isDef(res.timeout)) {
           timerTimeout = setTimeout(() => {
             timerTimeout = null

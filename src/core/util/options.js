@@ -143,6 +143,9 @@ strats.data = function (
 /**
  * Hooks and props are merged as arrays.
  */
+// 逻辑是如果子组件存在hook，就把子组件的hook回调追加到父组件的hook回调后面生成一个新数组
+// 如果父组件不存在，就返回子组件hook回调的数组
+// 否则返回父组件回调
 function mergeHook (
   parentVal: ?Array<Function>,
   childVal: ?Function | ?Array<Function>
@@ -305,9 +308,11 @@ function normalizeProps (options: Object, vm: ?Component) {
     while (i--) {
       val = props[i]
       if (typeof val === 'string') {
+        // 将命名转成驼峰式
         name = camelize(val)
         res[name] = { type: null }
       } else if (process.env.NODE_ENV !== 'production') {
+        // 提示如果是使用数组装载props时val应为string类型
         warn('props must be strings when using array syntax.')
       }
     }
@@ -451,6 +456,7 @@ export function resolveAsset (
   }
   const assets = options[type]
   // check local registration variations first
+  // 这里有三个判断，分别是对连字符、驼峰命名、驼峰命名+首字符大写，保证了我们在注册组件时可以使用三种命名形式的id
   if (hasOwn(assets, id)) return assets[id]
   const camelizedId = camelize(id)
   if (hasOwn(assets, camelizedId)) return assets[camelizedId]

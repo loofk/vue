@@ -23,6 +23,7 @@ function _traverse (val: any, seen: SimpleSet) {
     return
   }
   if (val.__ob__) {
+    // 记录子响应对象，避免重复访问
     const depId = val.__ob__.dep.id
     if (seen.has(depId)) {
       return

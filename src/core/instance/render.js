@@ -28,9 +28,11 @@ export function initRender (vm: Component) {
   // so that we get proper render context inside it.
   // args order: tag, data, children, normalizationType, alwaysNormalize
   // internal version is used by render functions compiled from templates
+  // 这里绑定的_c方法是Vue用来供template编译成的render函数使用的
   vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false)
   // normalization is always applied for the public version, used in
   // user-written render functions.
+  // 这个方法是下面_render方法调用的，用于处理用户手写的render函数
   vm.$createElement = (a, b, c, d) => createElement(vm, a, b, c, d, true)
 
   // $attrs & $listeners are exposed for easier HOC creation.
@@ -80,6 +82,7 @@ export function renderMixin (Vue: Class<Component>) {
 
     // set parent vnode. this allows render functions to have access
     // to the data on the placeholder node.
+    // 如果是根节点，则没有_parentVnode属性
     vm.$vnode = _parentVnode
     // render self
     let vnode
@@ -88,6 +91,9 @@ export function renderMixin (Vue: Class<Component>) {
       // separately from one another. Nested component's render fns are called
       // when parent component is patched.
       currentRenderingInstance = vm
+      // 调用我们选项中的render函数，将模板编译成vnode
+      // 其中createElement函数是我们编写render函数时的传参，也就是render: h => h(App)
+      // createElement函数是由Vue内部实现，却由开发者调用，根据参数对象创建虚拟的VNode
       vnode = render.call(vm._renderProxy, vm.$createElement)
     } catch (e) {
       handleError(e, vm, `render`)

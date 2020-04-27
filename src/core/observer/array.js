@@ -21,8 +21,10 @@ const methodsToPatch = [
 /**
  * Intercept mutating methods and emit events
  */
+// 将上面指定的7个数组方法重写以便能触发数组修改的响应式
 methodsToPatch.forEach(function (method) {
   // cache original method
+  // 缓存原始的数组方法
   const original = arrayProto[method]
   def(arrayMethods, method, function mutator (...args) {
     const result = original.apply(this, args)

@@ -16,6 +16,7 @@ import { isFalse, isTrue, isDef, isUndef, isPrimitive } from 'shared/util'
 // thing with Array.prototype.concat. It is guaranteed to be only 1-level deep
 // because functional components already normalize their own children.
 export function simpleNormalizeChildren (children: any) {
+  // 如果是函数式组件，返回的是数组不是根节点，需要flat成一层嵌套的数组，利用apply展开参数的特性
   for (let i = 0; i < children.length; i++) {
     if (Array.isArray(children[i])) {
       return Array.prototype.concat.apply([], children)
@@ -28,6 +29,8 @@ export function simpleNormalizeChildren (children: any) {
 // e.g. <template>, <slot>, v-for, or when the children is provided by user
 // with hand-written render functions / JSX. In such cases a full normalization
 // is needed to cater to all possible types of children values.
+// 用户编写的render函数对children有两种处理，一种是创建简单的文本节点，这里直接调用createTextVNode生成文本节点
+// 另一种可能是children为嵌套数组的情况，调用normalizeArrayChildren方法
 export function normalizeChildren (children: any): ?Array<VNode> {
   return isPrimitive(children)
     ? [createTextVNode(children)]
@@ -40,6 +43,9 @@ function isTextNode (node): boolean {
   return isDef(node) && isDef(node.text) && isFalse(node.isComment)
 }
 
+// 处理了三种情况，一种是child还是数组时，递归调用自身；如果是基础类型，则生成文本节点；如果不是以上两种情况，则已经是VNode节点了
+// 我们在三种情况下都要判断相邻的节点是否是text节点，如果是则合并成一个text节点
+// 这里的这个nestedIndex参数暂时没搞懂是干什么用的，只是在child仍然是嵌套数组时根据nestedIndex更新child的key
 function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNode> {
   const res = []
   let i, c, lastIndex, last

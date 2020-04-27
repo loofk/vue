@@ -57,6 +57,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     }
 
     // compile
+    // 核心过程，根据模板和配置进行编译
     const compiled = compile(template, options)
 
     // check compilation errors/tips

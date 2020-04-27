@@ -20,6 +20,7 @@ export function initExtend (Vue: GlobalAPI) {
     extendOptions = extendOptions || {}
     const Super = this
     const SuperId = Super.cid
+    // 进行缓存，避免重复构造
     const cachedCtors = extendOptions._Ctor || (extendOptions._Ctor = {})
     if (cachedCtors[SuperId]) {
       return cachedCtors[SuperId]
@@ -30,6 +31,7 @@ export function initExtend (Vue: GlobalAPI) {
       validateComponentName(name)
     }
 
+    // 经典寄生组合式继承，首先复制父类的构造函数内部实现（_init），然后修改原型链（Object.create）并修正构造函数，最后补充扩展相应的方法
     const Sub = function VueComponent (options) {
       this._init(options)
     }
@@ -45,6 +47,7 @@ export function initExtend (Vue: GlobalAPI) {
     // For props and computed properties, we define the proxy getters on
     // the Vue instances at extension time, on the extended prototype. This
     // avoids Object.defineProperty calls for each instance created.
+    // 子组件的props代理
     if (Sub.options.props) {
       initProps(Sub)
     }

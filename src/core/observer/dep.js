@@ -17,6 +17,7 @@ export default class Dep {
 
   constructor () {
     this.id = uid++
+    // 收集watcher的列表
     this.subs = []
   }
 
@@ -28,12 +29,14 @@ export default class Dep {
     remove(this.subs, sub)
   }
 
+  // 调用watcher的addDep方法，实则是回过来将watcher自身添加到当前对象dep实例的subs列表中，实现依赖收集
   depend () {
     if (Dep.target) {
       Dep.target.addDep(this)
     }
   }
 
+  // 派发更新，主要是调用watcher的update方法，更新视图
   notify () {
     // stabilize the subscriber list first
     const subs = this.subs.slice()
@@ -52,6 +55,7 @@ export default class Dep {
 // The current target watcher being evaluated.
 // This is globally unique because only one watcher
 // can be evaluated at a time.
+// 全局唯一的watcher对象，这么做的原因是同一时间只能有一个watcher被计算
 Dep.target = null
 const targetStack = []
 

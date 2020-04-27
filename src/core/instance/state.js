@@ -45,6 +45,7 @@ export function proxy (target: Object, sourceKey: string, key: string) {
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
+// 处理了props、methods、data、computed、watch等数据
 export function initState (vm: Component) {
   vm._watchers = []
   const opts = vm.$options
@@ -56,6 +57,7 @@ export function initState (vm: Component) {
     observe(vm._data = {}, true /* asRootData */)
   }
   if (opts.computed) initComputed(vm, opts.computed)
+  // 火狐浏览器下Object.prototype有一个watch函数（nativeWatch），要注意区分
   if (opts.watch && opts.watch !== nativeWatch) {
     initWatch(vm, opts.watch)
   }
@@ -69,6 +71,8 @@ function initProps (vm: Component, propsOptions: Object) {
   const keys = vm.$options._propKeys = []
   const isRoot = !vm.$parent
   // root instance props should be converted
+  // 如果是根实例，则需要递归对数组或者对象的值进行响应式
+  // 否则，对引用类型可以跳过响应式这一步，提升性能
   if (!isRoot) {
     toggleObserving(false)
   }
@@ -78,6 +82,7 @@ function initProps (vm: Component, propsOptions: Object) {
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
       const hyphenatedKey = hyphenate(key)
+      // 校验是否是HTML保留属性，如果是给出警告
       if (isReservedAttribute(hyphenatedKey) ||
           config.isReservedAttr(hyphenatedKey)) {
         warn(
@@ -102,10 +107,12 @@ function initProps (vm: Component, propsOptions: Object) {
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
+    // 将_props中的属性代理到Vue实例上
     if (!(key in vm)) {
       proxy(vm, `_props`, key)
     }
   }
+  // 恢复对值的递归响应式
   toggleObserving(true)
 }
 
@@ -144,6 +151,7 @@ function initData (vm: Component) {
         vm
       )
     } else if (!isReserved(key)) {
+      // 将_data中的属性代理到Vue实例上
       proxy(vm, `_data`, key)
     }
   }
@@ -168,6 +176,7 @@ const computedWatcherOptions = { lazy: true }
 
 function initComputed (vm: Component, computed: Object) {
   // $flow-disable-line
+  // 创建_computedWatchers对象，保存计算属性的watcher对象
   const watchers = vm._computedWatchers = Object.create(null)
   // computed properties are just getters during SSR
   const isSSR = isServerRendering()
@@ -184,6 +193,7 @@ function initComputed (vm: Component, computed: Object) {
 
     if (!isSSR) {
       // create internal watcher for the computed property.
+      // 创建computed watcher
       watchers[key] = new Watcher(
         vm,
         getter || noop,
@@ -198,6 +208,7 @@ function initComputed (vm: Component, computed: Object) {
     if (!(key in vm)) {
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
+      // 校验computed属性是否已经在data和props中被定义
       if (key in vm.$data) {
         warn(`The computed property "${key}" is already defined in data.`, vm)
       } else if (vm.$options.props && key in vm.$options.props) {
@@ -239,12 +250,15 @@ export function defineComputed (
 }
 
 function createComputedGetter (key) {
+  // 这里只是为每个计算属性返回其getter函数，等到取值的时候触发下面的逻辑
   return function computedGetter () {
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
+      // 计算属性在这里才对watcher进行求值
       if (watcher.dirty) {
         watcher.evaluate()
       }
+      // 这里等于渲染watcher订阅了computed watcher的变化
       if (Dep.target) {
         watcher.depend()
       }
@@ -290,6 +304,7 @@ function initMethods (vm: Component, methods: Object) {
 function initWatch (vm: Component, watch: Object) {
   for (const key in watch) {
     const handler = watch[key]
+    // watch支持一个key对应多个handle
     if (Array.isArray(handler)) {
       for (let i = 0; i < handler.length; i++) {
         createWatcher(vm, key, handler[i])
@@ -353,7 +368,9 @@ export function stateMixin (Vue: Class<Component>) {
     }
     options = options || {}
     options.user = true
+    // 实例化了一个watcher，注意这是一个user watcher
     const watcher = new Watcher(vm, expOrFn, cb, options)
+    // 如果设置了immediate属性，会立即执行回调
     if (options.immediate) {
       try {
         cb.call(vm, watcher.value)
@@ -361,6 +378,7 @@ export function stateMixin (Vue: Class<Component>) {
         handleError(error, vm, `callback for immediate watcher "${watcher.expression}"`)
       }
     }
+    // 返回unwatchFn函数移除本身
     return function unwatchFn () {
       watcher.teardown()
     }

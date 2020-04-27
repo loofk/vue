@@ -10,6 +10,8 @@ export function createCompilerCreator (baseCompile: Function): Function {
       template: string,
       options?: CompilerOptions
     ): CompiledResult {
+      // 这个finalOptions是继承自baseOptions的配置
+      // 是关于不同平台的配置信息
       const finalOptions = Object.create(baseOptions)
       const errors = []
       const tips = []
@@ -18,6 +20,7 @@ export function createCompilerCreator (baseCompile: Function): Function {
         (tip ? tips : errors).push(msg)
       }
 
+      // 这个options是编译的配置，主要是针对平台内部的差异化配置
       if (options) {
         if (process.env.NODE_ENV !== 'production' && options.outputSourceRange) {
           // $flow-disable-line

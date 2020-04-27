@@ -39,25 +39,44 @@ export default class VNode {
     componentOptions?: VNodeComponentOptions,
     asyncFactory?: Function
   ) {
+    // 标签名
     this.tag = tag
+    // 具体的数据信息，是VNodeData类型对象
     this.data = data
+    // 子节点数组
     this.children = children
+    // 文本内容
     this.text = text
+    // 当前虚拟节点对应的真实dom节点
     this.elm = elm
+    // 命名空间
     this.ns = undefined
+    // 编译作用域
     this.context = context
+    // 函数式组件作用域
     this.fnContext = undefined
+    // 函数式组件options选项
     this.fnOptions = undefined
     this.fnScopeId = undefined
+    // 当前虚拟节点的key属性，节点的标志，被用作优化
     this.key = data && data.key
+    // 组件的options选项
     this.componentOptions = componentOptions
+    // 当前节点对应的组件实例
     this.componentInstance = undefined
+    // 父亲节点
     this.parent = undefined
+    // 是否是原生HTML还是普通文本
     this.raw = false
+    // 静态节点标识
     this.isStatic = false
+    // 是否作为根节点插入
     this.isRootInsert = true
+    // 是否是注释节点
     this.isComment = false
+    // 是否为克隆节点
     this.isCloned = false
+    // 是否设置了v-once指令
     this.isOnce = false
     this.asyncFactory = asyncFactory
     this.asyncMeta = undefined
@@ -71,6 +90,7 @@ export default class VNode {
   }
 }
 
+// 创建一个空节点（注释节点）
 export const createEmptyVNode = (text: string = '') => {
   const node = new VNode()
   node.text = text
@@ -78,6 +98,7 @@ export const createEmptyVNode = (text: string = '') => {
   return node
 }
 
+// 创建一个文本节点
 export function createTextVNode (val: string | number) {
   return new VNode(undefined, undefined, undefined, String(val))
 }
@@ -86,6 +107,7 @@ export function createTextVNode (val: string | number) {
 // used for static nodes and slot nodes because they may be reused across
 // multiple renders, cloning them avoids errors when DOM manipulations rely
 // on their elm reference.
+// 克隆节点
 export function cloneVNode (vnode: VNode): VNode {
   const cloned = new VNode(
     vnode.tag,

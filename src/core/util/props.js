@@ -29,12 +29,16 @@ export function validateProp (
   let value = propsData[key]
   // boolean casting
   const booleanIndex = getTypeIndex(Boolean, prop.type)
+  // 如果该props属性为Boolean类型
   if (booleanIndex > -1) {
+    // 如果不存在该属性且没有设置默认值，置为false
     if (absent && !hasOwn(prop, 'default')) {
       value = false
     } else if (value === '' || value === hyphenate(key)) {
       // only cast empty string / same name to boolean if
       // boolean has higher priority
+      // props的类型可以是数组类型，如[Boolean, String]
+      // 如果引用组件时未传值或者传值和其键名一致且Boolean类型靠前，置为true
       const stringIndex = getTypeIndex(String, prop.type)
       if (stringIndex < 0 || booleanIndex < stringIndex) {
         value = true
@@ -42,7 +46,9 @@ export function validateProp (
     }
   }
   // check default value
+  // 处理默认值
   if (value === undefined) {
+    // 如果value为undefined，说明父组件未传值，则去获取其默认值
     value = getPropDefaultValue(vm, prop, key)
     // since the default value is a fresh copy,
     // make sure to observe it.
@@ -56,6 +62,7 @@ export function validateProp (
     // skip validation for weex recycle-list child component props
     !(__WEEX__ && isObject(value) && ('@binding' in value))
   ) {
+    // 属性断言
     assertProp(prop, key, value, vm, absent)
   }
   return value
@@ -66,11 +73,13 @@ export function validateProp (
  */
 function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): any {
   // no default, return undefined
+  // 无默认值，返回undefined
   if (!hasOwn(prop, 'default')) {
     return undefined
   }
   const def = prop.default
   // warn against non-factory defaults for Object & Array
+  // 对Object/Array类型的prop，其默认值必须是一个工厂函数，形如() => {} / () => []
   if (process.env.NODE_ENV !== 'production' && isObject(def)) {
     warn(
       'Invalid default value for prop "' + key + '": ' +
@@ -81,6 +90,7 @@ function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): a
   }
   // the raw prop value was also undefined from previous render,
   // return previous default value to avoid unnecessary watcher trigger
+  // 如果上一次组件渲染父组件传递的是undefined，则直接返回上一次的默认值vm._props[key]，可避免不必要的watcher更新
   if (vm && vm.$options.propsData &&
     vm.$options.propsData[key] === undefined &&
     vm._props[key] !== undefined
@@ -104,6 +114,7 @@ function assertProp (
   vm: ?Component,
   absent: boolean
 ) {
+  // 如果某个prop设置了required属性且未传值，给出提示
   if (prop.required && absent) {
     warn(
       'Missing required prop: "' + name + '"',
@@ -114,6 +125,7 @@ function assertProp (
   if (value == null && !prop.required) {
     return
   }
+  // 校验prop的类型
   let type = prop.type
   let valid = !type || type === true
   const expectedTypes = []
@@ -135,6 +147,7 @@ function assertProp (
     )
     return
   }
+  // 执行用户自定义的validator校验器
   const validator = prop.validator
   if (validator) {
     if (!validator(value)) {
@@ -153,7 +166,9 @@ function assertType (value: any, type: Function): {
   expectedType: string;
 } {
   let valid
+  // 根据给定的类型获取其期望类型
   const expectedType = getType(type)
+  // 然后看value的值是否符合其给定的期望类型
   if (simpleCheckRE.test(expectedType)) {
     const t = typeof value
     valid = t === expectedType.toLowerCase()

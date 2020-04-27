@@ -18,11 +18,14 @@ import {
   convertEnumeratedValue
 } from 'web/util/index'
 
+// 当创建或修改真实DOM时，同步修改attrs
 function updateAttrs (oldVnode: VNodeWithData, vnode: VNodeWithData) {
   const opts = vnode.componentOptions
+  // TODO 如果设置了inheritAttrs属性为false，直接返回，这里的inheritAttrs属性和props中的inheritAttrs属性有何区别？
   if (isDef(opts) && opts.Ctor.options.inheritAttrs === false) {
     return
   }
+  // 如果新老节点都没有属性，直接返回
   if (isUndef(oldVnode.data.attrs) && isUndef(vnode.data.attrs)) {
     return
   }
@@ -31,10 +34,12 @@ function updateAttrs (oldVnode: VNodeWithData, vnode: VNodeWithData) {
   const oldAttrs = oldVnode.data.attrs || {}
   let attrs: any = vnode.data.attrs || {}
   // clone observed objects, as the user probably wants to mutate it
+  // 如果新节点的attrs属性已经有__ob__属性，代表已经是响应式数据了，对其进行拷贝
   if (isDef(attrs.__ob__)) {
     attrs = vnode.data.attrs = extend({}, attrs)
   }
 
+  // 遍历属性，如果发现不一致，替换成新属性
   for (key in attrs) {
     cur = attrs[key]
     old = oldAttrs[key]

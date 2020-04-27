@@ -33,6 +33,7 @@ export function createElement (
   normalizationType: any,
   alwaysNormalize: boolean
 ): VNode | Array<VNode> {
+  // 处理不传data的情况
   if (Array.isArray(data) || isPrimitive(data)) {
     normalizationType = children
     children = data
@@ -87,15 +88,19 @@ export function _createElement (
     data.scopedSlots = { default: children[0] }
     children.length = 0
   }
+  // 根据render函数类型区分如何处理子节点，如果是编译生成则子节点已经是VNode类型或者数组，直接使用简单规范化，否则使用严格的规范，将子节点规范成VNode类型
   if (normalizationType === ALWAYS_NORMALIZE) {
     children = normalizeChildren(children)
   } else if (normalizationType === SIMPLE_NORMALIZE) {
     children = simpleNormalizeChildren(children)
   }
+  // 根据tag的类型创建VNode实例
   let vnode, ns
   if (typeof tag === 'string') {
     let Ctor
     ns = (context.$vnode && context.$vnode.ns) || config.getTagNamespace(tag)
+    // 如果是内置节点，则根据tag标签创建一个普通的VNode节点
+    // 这里根据路径寻找得出这个isReservedTag函数是根据不同平台被重写的一个函数，在web端判断为isHTMLTag或isSVG
     if (config.isReservedTag(tag)) {
       // platform built-in elements
       if (process.env.NODE_ENV !== 'production' && isDef(data) && isDef(data.nativeOn)) {
@@ -110,11 +115,13 @@ export function _createElement (
       )
     } else if ((!data || !data.pre) && isDef(Ctor = resolveAsset(context.$options, 'components', tag))) {
       // component
+      // 如果tag是一个已经注册的组件名，则创建一个组件类型的VNode节点
       vnode = createComponent(Ctor, data, context, children, tag)
     } else {
       // unknown or unlisted namespaced elements
       // check at runtime because it may get assigned a namespace when its
       // parent normalizes children
+      // 创建一个未知节点
       vnode = new VNode(
         tag, data, children,
         undefined, undefined, context
@@ -122,6 +129,7 @@ export function _createElement (
     }
   } else {
     // direct component options / constructor
+    // 如果tag是一个Component类型，则创建一个组件类型的VNode节点
     vnode = createComponent(tag, data, context, children)
   }
   if (Array.isArray(vnode)) {

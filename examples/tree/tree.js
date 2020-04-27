@@ -29,6 +29,7 @@ var data = {
 }
 
 // define the item component
+// eslint-disable-next-line no-undef
 Vue.component('item', {
   template: '#item-template',
   props: {
@@ -45,6 +46,12 @@ Vue.component('item', {
         this.model.children.length
     }
   },
+  mounted() {
+    // if (this._uid === 1) {
+    //   console.log(this._vnode)
+    //   console.log(this.$vnode)
+    // }
+  },
   methods: {
     toggle: function () {
       if (this.isFolder) {
@@ -53,6 +60,7 @@ Vue.component('item', {
     },
     changeType: function () {
       if (!this.isFolder) {
+        // eslint-disable-next-line no-undef
         Vue.set(this.model, 'children', [])
         this.addChild()
         this.open = true
@@ -67,9 +75,10 @@ Vue.component('item', {
 })
 
 // boot up the demo
-var demo = new Vue({
+// eslint-disable-next-line no-undef
+new Vue({
   el: '#demo',
   data: {
     treeData: data
-  }
+  },
 })

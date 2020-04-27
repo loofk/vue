@@ -21,6 +21,7 @@ import {
 export let activeInstance: any = null
 export let isUpdatingChildComponent: boolean = false
 
+// 保存老的实例，在需要时恢复成老的实例
 export function setActiveInstance(vm: Component) {
   const prevActiveInstance = activeInstance
   activeInstance = vm
@@ -59,18 +60,23 @@ export function lifecycleMixin (Vue: Class<Component>) {
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     const prevEl = vm.$el
+    // 首先保存老的节点
     const prevVnode = vm._vnode
+    // 保存当前vm实例作为上下文
     const restoreActiveInstance = setActiveInstance(vm)
     vm._vnode = vnode
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
+    // 如果不存在老节点，说明是初次渲染
     if (!prevVnode) {
       // initial render
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
+      // 否则是更新视图，需要比对并针对性改动
       vm.$el = vm.__patch__(prevVnode, vnode)
     }
+    // 恢复当前上下文
     restoreActiveInstance()
     // update __vue__ reference
     if (prevEl) {
@@ -143,7 +149,9 @@ export function mountComponent (
   el: ?Element,
   hydrating?: boolean
 ): Component {
+  // 赋值$el属性
   vm.$el = el
+  // 如果到这里没有render函数，说明没有使用编译器编译或者自行编写render函数，报错提示
   if (!vm.$options.render) {
     vm.$options.render = createEmptyVNode
     if (process.env.NODE_ENV !== 'production') {
@@ -164,10 +172,12 @@ export function mountComponent (
       }
     }
   }
+  // 触发beforeMount钩子并执行回调，在_render函数渲染之前触发
   callHook(vm, 'beforeMount')
 
   let updateComponent
   /* istanbul ignore if */
+  // 开发环境进行性能测试，调用_render方法和_update方法得到vnode虚拟节点并更新视图
   if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
     updateComponent = () => {
       const name = vm._name
@@ -196,6 +206,7 @@ export function mountComponent (
   // component's mounted hook), which relies on vm._watcher being already defined
   new Watcher(vm, updateComponent, noop, {
     before () {
+      // 组件已经mounted且尚未destroyed时，会在数据变更时，渲染DOM之前触发该钩子
       if (vm._isMounted && !vm._isDestroyed) {
         callHook(vm, 'beforeUpdate')
       }
@@ -205,6 +216,7 @@ export function mountComponent (
 
   // manually mounted instance, call mounted on self
   // mounted is called for render-created child components in its inserted hook
+  // $vnode为空，说明当前实例是根Vue的实例而不是内部组件实例，这时实例已经挂载，触发mounted钩子并执行回调
   if (vm.$vnode == null) {
     vm._isMounted = true
     callHook(vm, 'mounted')
@@ -261,8 +273,10 @@ export function updateChildComponent (
   vm.$listeners = listeners || emptyObject
 
   // update props
+  // propsData为父组件传递的props数据
   if (propsData && vm.$options.props) {
     toggleObserving(false)
+    // 当前组件的props
     const props = vm._props
     const propKeys = vm.$options._propKeys || []
     for (let i = 0; i < propKeys.length; i++) {

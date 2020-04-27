@@ -9,11 +9,13 @@ import { query } from './util/index'
 import { compileToFunctions } from './compiler/index'
 import { shouldDecodeNewlines, shouldDecodeNewlinesForHref } from './util/compat'
 
+// 根据缓存直接取得已有的innerHtml
 const idToTemplate = cached(id => {
   const el = query(id)
   return el && el.innerHTML
 })
 
+// 首先缓存原型上的$mount方法，然后重写该方法
 const mount = Vue.prototype.$mount
 Vue.prototype.$mount = function (
   el?: string | Element,
@@ -22,6 +24,7 @@ Vue.prototype.$mount = function (
   el = el && query(el)
 
   /* istanbul ignore if */
+  // 禁止挂载html和body标签
   if (el === document.body || el === document.documentElement) {
     process.env.NODE_ENV !== 'production' && warn(
       `Do not mount Vue to <html> or <body> - mount to normal elements instead.`
@@ -31,6 +34,7 @@ Vue.prototype.$mount = function (
 
   const options = this.$options
   // resolve template/el and convert to render function
+  // 如果未定义render函数，则处理vue文件中template选项或者el选项中的内容，将其转化成render函数
   if (!options.render) {
     let template = options.template
     if (template) {
@@ -62,6 +66,7 @@ Vue.prototype.$mount = function (
         mark('compile')
       }
 
+      // 调用compileToFunctions函数将模板编译生成render和staticRenderFns函数
       const { render, staticRenderFns } = compileToFunctions(template, {
         outputSourceRange: process.env.NODE_ENV !== 'production',
         shouldDecodeNewlines,
@@ -79,6 +84,7 @@ Vue.prototype.$mount = function (
       }
     }
   }
+  // 调用原型上的$mount方法进行挂载
   return mount.call(this, el, hydrating)
 }
 

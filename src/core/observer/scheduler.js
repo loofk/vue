@@ -81,10 +81,15 @@ function flushSchedulerQueue () {
   //    user watchers are created before the render watcher)
   // 3. If a component is destroyed during a parent component's watcher run,
   //    its watchers can be skipped.
+  // 在更新前对队列进行排序，主要保证三点
+  // 1.组件的创建是由父到子，所以更新的时候也需要保证由父到子
+  // 2.用户定义的watcher一定比渲染watcher更早创建，所以更新也应该更早
+  // 3.如果组件在父组件run的时候被销毁，可以被跳过
   queue.sort((a, b) => a.id - b.id)
 
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
+  // 每次遍历的时候都对queue的长度进行求值，这是因为在run的时候很可能用户会再次添加新的watcher，或者销毁老的watcher
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
     if (watcher.before) {
@@ -114,6 +119,7 @@ function flushSchedulerQueue () {
   const activatedQueue = activatedChildren.slice()
   const updatedQueue = queue.slice()
 
+  // flush后，将所有涉及到的状态恢复
   resetSchedulerState()
 
   // call component updated and activated hooks
@@ -127,6 +133,7 @@ function flushSchedulerQueue () {
   }
 }
 
+// 执行updated钩子回调
 function callUpdatedHooks (queue) {
   let i = queue.length
   while (i--) {

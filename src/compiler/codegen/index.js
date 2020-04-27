@@ -216,6 +216,7 @@ export function genFor (
     '})'
 }
 
+// 构造出VNode节点的data属性对象
 export function genData (el: ASTElement, state: CodegenState): string {
   let data = '{'
 
@@ -244,6 +245,7 @@ export function genData (el: ASTElement, state: CodegenState): string {
     data += `tag:"${el.tag}",`
   }
   // module data generation functions
+  // 获取所有modules中的genData函数，这里只涉及到class module和style module
   for (let i = 0; i < state.dataGenFns.length; i++) {
     data += state.dataGenFns[i](el)
   }
@@ -272,6 +274,7 @@ export function genData (el: ASTElement, state: CodegenState): string {
     data += `${genScopedSlots(el, el.scopedSlots, state)},`
   }
   // component v-model
+  // 处理生成的组件v-model
   if (el.model) {
     data += `model:{value:${
       el.model.value
@@ -306,6 +309,7 @@ export function genData (el: ASTElement, state: CodegenState): string {
   return data
 }
 
+// 解析ast中的普通指令
 function genDirectives (el: ASTElement, state: CodegenState): string | void {
   const dirs = el.directives
   if (!dirs) return

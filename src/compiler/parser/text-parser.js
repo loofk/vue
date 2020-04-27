@@ -17,10 +17,14 @@ type TextParseResult = {
   tokens: Array<string | { '@binding': string }>
 }
 
+// 解析文本，对于例子
+// <li>{{item}}:{{index}}</li>
+// 解析成return { expression : '_s(item)+":"+_s(index)', tokens: [{ '@binding': 'item' }, ':', { '@binding': 'index' }] }
 export function parseText (
   text: string,
   delimiters?: [string, string]
 ): TextParseResult | void {
+  // 匹配{{}}表达式的正则
   const tagRE = delimiters ? buildRegex(delimiters) : defaultTagRE
   if (!tagRE.test(text)) {
     return

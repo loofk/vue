@@ -34,11 +34,14 @@ extend(Vue.options.components, platformComponents)
 Vue.prototype.__patch__ = inBrowser ? patch : noop
 
 // public mount method
+// 公共的$mount方法，用于多个版本的Vue复用
 Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
 ): Component {
+  // 如果在浏览器环境，会调用query将el转化成DOM对象
   el = el && inBrowser ? query(el) : undefined
+  // 实际调用core/instance/lifecycle文件中的mountComponent方法
   return mountComponent(this, el, hydrating)
 }
 

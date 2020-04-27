@@ -9,4 +9,6 @@ import platformModules from 'web/runtime/modules/index'
 // built-in modules have been applied.
 const modules = platformModules.concat(baseModules)
 
+// 不同平台都通过createPatchFunction函数生成__patch__方法
+// 区别是引入的nodeOps（操作平台DOM的基本方法，比如说web的removeChild）、modules（不同平台的一些模块，用来触发不同阶段的钩子函数）的不同
 export const patch: Function = createPatchFunction({ nodeOps, modules })

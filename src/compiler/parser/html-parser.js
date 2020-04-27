@@ -21,7 +21,7 @@ const qnameCapture = `((?:${ncname}\\:)?${ncname})`
 const startTagOpen = new RegExp(`^<${qnameCapture}`)
 const startTagClose = /^\s*(\/?)>/
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`)
-const doctype = /^<!DOCTYPE [^>]+>/i
+const doctype = /^<!DOCTYPE [^>]+>/i // 匹配形如<!DOCTYPE html>的字符串，[^>]+表示匹配非^字符的其他字符一次或多次且大小写不敏感
 // #7298: escape - to avoid being passed as HTML comment when inlined in page
 const comment = /^<!\--/
 const conditionalComment = /^<!\[/
@@ -65,6 +65,7 @@ export function parseHTML (html, options) {
       let textEnd = html.indexOf('<')
       if (textEnd === 0) {
         // Comment:
+        // 匹配注释节点
         if (comment.test(html)) {
           const commentEnd = html.indexOf('-->')
 
@@ -78,6 +79,7 @@ export function parseHTML (html, options) {
         }
 
         // http://en.wikipedia.org/wiki/Conditional_comment#Downlevel-revealed_conditional_comment
+        // 匹配条件注释节点（IE的条件注释法）
         if (conditionalComment.test(html)) {
           const conditionalEnd = html.indexOf(']>')
 
@@ -88,6 +90,7 @@ export function parseHTML (html, options) {
         }
 
         // Doctype:
+        // 匹配doctype节点
         const doctypeMatch = html.match(doctype)
         if (doctypeMatch) {
           advance(doctypeMatch[0].length)
@@ -95,6 +98,7 @@ export function parseHTML (html, options) {
         }
 
         // End tag:
+        // 匹配闭合标签
         const endTagMatch = html.match(endTag)
         if (endTagMatch) {
           const curIndex = index
@@ -104,6 +108,7 @@ export function parseHTML (html, options) {
         }
 
         // Start tag:
+        // 匹配开始标签
         const startTagMatch = parseStartTag()
         if (startTagMatch) {
           handleStartTag(startTagMatch)
@@ -114,6 +119,7 @@ export function parseHTML (html, options) {
         }
       }
 
+      // 匹配文本，如果textEnd大于等于0，说明从开始到textEnd处都是文本
       let text, rest, next
       if (textEnd >= 0) {
         rest = html.slice(textEnd)
@@ -124,7 +130,8 @@ export function parseHTML (html, options) {
           !conditionalComment.test(rest)
         ) {
           // < in plain text, be forgiving and treat it as text
-          next = rest.indexOf('<', 1)
+          // 如果标签开始表示符（<）存在于文本中，则继续退后textEnd
+          next = rest.indexOf('<', 1) // indexOf的第二个参数意为从某个位置开始查找
           if (next < 0) break
           textEnd += next
           rest = html.slice(textEnd)
@@ -132,6 +139,7 @@ export function parseHTML (html, options) {
         text = html.substring(0, textEnd)
       }
 
+      // 如果textEnd小于0，说明整个template解析完毕
       if (textEnd < 0) {
         text = html
       }
@@ -258,6 +266,7 @@ export function parseHTML (html, options) {
     if (end == null) end = index
 
     // Find the closest opened tag of the same type
+    // 找到从栈尾往前的第一个匹配的标签
     if (tagName) {
       lowerCasedTagName = tagName.toLowerCase()
       for (pos = stack.length - 1; pos >= 0; pos--) {
