@@ -9554,7 +9554,7 @@
   var startTagOpen = new RegExp(("^<" + qnameCapture));
   var startTagClose = /^\s*(\/?)>/;
   var endTag = new RegExp(("^<\\/" + qnameCapture + "[^>]*>"));
-  var doctype = /^<!DOCTYPE [^>]+>/i;
+  var doctype = /^<!DOCTYPE [^>]+>/i; // 匹配形如<!DOCTYPE html>的字符串，[^>]+表示匹配非^字符的其他字符一次或多次且大小写不敏感
   // #7298: escape - to avoid being passed as HTML comment when inlined in page
   var comment = /^<!\--/;
   var conditionalComment = /^<!\[/;
@@ -9596,7 +9596,6 @@
       // Make sure we're not in a plaintext content element like script/style
       if (!lastTag || !isPlainTextElement(lastTag)) {
         var textEnd = html.indexOf('<');
-        console.log(textEnd);
         if (textEnd === 0) {
           // Comment:
           // 匹配注释节点
@@ -12238,7 +12237,6 @@
     options
   ) {
     var ast = parse(template.trim(), options);
-    console.log(ast);
     if (options.optimize !== false) {
       optimize(ast, options);
     }
