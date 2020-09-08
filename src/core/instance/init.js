@@ -43,6 +43,7 @@ export function initMixin (Vue: Class<Component>) {
       )
     }
     /* istanbul ignore else */
+    // 开发阶段包装vm对象，提示render函数中使用的变量是否已经定义
     if (process.env.NODE_ENV !== 'production') {
       initProxy(vm)
     } else {

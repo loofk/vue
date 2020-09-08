@@ -35,6 +35,7 @@ const sharedPropertyDefinition = {
   set: noop
 }
 
+// 举个例子，我们引用this.a时实际上引用的是this._data.a
 export function proxy (target: Object, sourceKey: string, key: string) {
   sharedPropertyDefinition.get = function proxyGetter () {
     return this[sourceKey][key]
@@ -131,6 +132,7 @@ function initData (vm: Component) {
   }
   // proxy data on instance
   const keys = Object.keys(data)
+  // 取props、methods数据的原因是比较变量名，不能重复定义
   const props = vm.$options.props
   const methods = vm.$options.methods
   let i = keys.length

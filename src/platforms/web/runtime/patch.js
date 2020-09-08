@@ -7,6 +7,7 @@ import platformModules from 'web/runtime/modules/index'
 
 // the directive module should be applied last, after all
 // built-in modules have been applied.
+// 所谓modules就是为DOM节点的一些属性定义的钩子函数
 const modules = platformModules.concat(baseModules)
 
 // 不同平台都通过createPatchFunction函数生成__patch__方法

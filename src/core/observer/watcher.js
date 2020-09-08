@@ -50,7 +50,7 @@ export default class Watcher {
     isRenderWatcher?: boolean
   ) {
     this.vm = vm
-    // 如果已经渲染了DOM就把当前watcher实例赋值给vm._watcher
+    // 如果是渲染的watcher就把当前watcher实例赋值给vm._watcher
     if (isRenderWatcher) {
       vm._watcher = this
     }

@@ -77,6 +77,7 @@ export function createPatchFunction (backend) {
 
   const { modules, nodeOps } = backend
 
+  // 在更新DOM的生命周期钩子函数中执行各个属性的钩子函数
   for (i = 0; i < hooks.length; ++i) {
     cbs[hooks[i]] = []
     for (j = 0; j < modules.length; ++j) {
@@ -756,7 +757,7 @@ export function createPatchFunction (backend) {
       isInitialPatch = true
       createElm(vnode, insertedVnodeQueue)
     } else {
-      // isRealElement参数判断传入的oldVnode是否是DOM对象
+      // isRealElement参数判断传入的oldVnode是否是真实DOM对象
       const isRealElement = isDef(oldVnode.nodeType)
       // 组件更新时走这个逻辑，会判断是否VNode有修改执行不同的更新策略
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
