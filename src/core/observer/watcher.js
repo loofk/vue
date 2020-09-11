@@ -154,7 +154,7 @@ export default class Watcher {
    */
   cleanupDeps () {
     let i = this.deps.length
-    // 清空的时候同样判断旧的依赖哪些在这次渲染中被移除，将其订阅移除，保持同步
+    // 当原来更新过的属性已经不在本次渲染用到的数据集合中时，将该属性的订阅移除，防止无谓的渲染
     while (i--) {
       const dep = this.deps[i]
       if (!this.newDepIds.has(dep.id)) {
@@ -206,7 +206,7 @@ export default class Watcher {
         // set new value
         const oldValue = this.value
         this.value = value
-        // 如果是user watcher，则针对watcher报错
+        // 如果是user watcher，则会定义回调函数，需要将新旧值传入作为参数供用户使用
         if (this.user) {
           try {
             // 将新旧值都传入watcher回调

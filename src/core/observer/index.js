@@ -68,6 +68,7 @@ export class Observer {
    * getter/setters. This method should only be called when
    * value type is Object.
    */
+  // 把对象的键观察起来
   walk (obj: Object) {
     const keys = Object.keys(obj)
     for (let i = 0; i < keys.length; i++) {
@@ -150,7 +151,7 @@ export function defineReactive (
 ) {
   const dep = new Dep()
 
-  // 如果该对象的这个键不可修改，则直接返回
+  // 如果该对象的这个键不可修改，则直接返回（__ob__）
   const property = Object.getOwnPropertyDescriptor(obj, key)
   if (property && property.configurable === false) {
     return

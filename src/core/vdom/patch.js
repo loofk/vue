@@ -742,7 +742,7 @@ export function createPatchFunction (backend) {
   // 接收4个参数，分别是老的VNode节点、新VNode节点、hydrating为是否是服务端渲染、removeOnly是给transition-group用的
   // oldVnode不仅可以表示为旧的VNode节点，还可以表示不存在或者DOM对象
   return function patch (oldVnode, vnode, hydrating, removeOnly) {
-    // 如果只定义了老节点而为定义新节点，说明要进行销毁，执行destory钩子
+    // 如果只定义了老节点而未定义新节点，说明要进行销毁，执行destory钩子
     if (isUndef(vnode)) {
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
       return
@@ -753,7 +753,7 @@ export function createPatchFunction (backend) {
 
     if (isUndef(oldVnode)) {
       // empty mount (likely as component), create new root element
-      // 组件渲染VNode时，oldVNode为undefined，所以走到这里
+      // 组件VNode渲染时，oldVNode为undefined，所以走到这里
       isInitialPatch = true
       createElm(vnode, insertedVnodeQueue)
     } else {

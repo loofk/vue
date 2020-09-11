@@ -168,6 +168,7 @@ function callActivatedHooks (queue) {
  * Jobs with duplicate IDs will be skipped unless it's
  * pushed when the queue is being flushed.
  */
+// 使用has全局数组确保同时多个数据触发同一个watcher的update只会被推入渲染队列queue一次
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
   if (has[id] == null) {

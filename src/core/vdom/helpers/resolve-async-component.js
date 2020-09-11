@@ -128,7 +128,7 @@ export function resolveAsyncComponent (
         if (isUndef(factory.resolved)) {
           res.then(resolve, reject)
         }
-      } else if (isPromise(res.component)) {
+      } else if (isPromise(res.component)) { // 高级异步组件情况
         res.component.then(resolve, reject)
 
         if (isDef(res.error)) {

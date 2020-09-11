@@ -70,6 +70,8 @@ export function renderMixin (Vue: Class<Component>) {
 
   Vue.prototype._render = function (): VNode {
     const vm: Component = this
+    // _parentVnode实际上是当前渲染的占位符，后面生成的vnode则是组件渲染的vnode了
+    // 后续_parentVnode被赋值给$vnode，而后面生成的vnode被赋值给_vnode，形成了父子关系
     const { render, _parentVnode } = vm.$options
 
     if (_parentVnode) {

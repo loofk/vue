@@ -44,7 +44,7 @@ const componentVNodeHooks = {
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
-      // 创建Vue实例
+      // 创建组件实例
       const child = vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
         activeInstance
@@ -112,10 +112,11 @@ export function createComponent (
     return
   }
 
+  // baseCtor = Vue
   const baseCtor = context.$options._base
 
   // plain options object: turn it into a constructor
-  // 如果是异步组件，则不会进行extend转化成组件的构造函数
+  // 如果是异步组件或者已经是构造函数了（全局组件），则不会进行extend转化成组件的构造函数
   if (isObject(Ctor)) {
     Ctor = baseCtor.extend(Ctor)
   }
@@ -132,7 +133,7 @@ export function createComponent (
 
   // async component
   let asyncFactory
-  // 由于没有进入extend方法，其cid为undefined
+  // 由于没有进入extend方法，其cid为undefined，说明是异步组件
   if (isUndef(Ctor.cid)) {
     asyncFactory = Ctor
     Ctor = resolveAsyncComponent(asyncFactory, baseCtor)
@@ -198,6 +199,7 @@ export function createComponent (
 
   // return a placeholder vnode
   // 组件render的过程中，会创建组件VNode，其中props等数据被作为第七个参数传入，这样我们便可以在vnode.componentOptions.propsData拿到父组件的props数据
+  // 创建组件VNode，传入的children、text、elm参数都为空，但传入了componentOptions参数，包含了组件的构造器、children等参数
   const name = Ctor.options.name || tag
   const vnode = new VNode(
     `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,
@@ -222,7 +224,7 @@ export function createComponentInstanceForVnode (
   // 这里的parent是从lifecycle中获取的全局变量activeInstance，目的是保存当前上下文也就是父组件
   parent: any, // activeInstance in lifecycle state
 ): Component {
-  // 这里在创建组件的Vue实例时修改_isComponent属性为true，代表是组件
+  // 这里在创建组件的Vue实例时设置_isComponent属性为true，标识为组件
   const options: InternalComponentOptions = {
     _isComponent: true,
     _parentVnode: vnode,
@@ -234,7 +236,7 @@ export function createComponentInstanceForVnode (
     options.render = inlineTemplate.render
     options.staticRenderFns = inlineTemplate.staticRenderFns
   }
-  // TODO 无法理解这里为什么能取到该实例的构造器
+  // 这里调用VueComponent组件构造器生成组件实例，构造器是在生成组件VNode时传入的componentOptions中取得的
   return new vnode.componentOptions.Ctor(options)
 }
 

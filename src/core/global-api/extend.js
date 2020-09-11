@@ -66,6 +66,7 @@ export function initExtend (Vue: GlobalAPI) {
       Sub[type] = Super[type]
     })
     // enable recursive self-lookup
+    // 如果一个组件在生成构造器函数时发现定义了name，则会把自己加入options的components属性中，以便递归调用
     if (name) {
       Sub.options.components[name] = Sub
     }
