@@ -123,6 +123,8 @@ export function parseHTML (html, options) {
       let text, rest, next
       if (textEnd >= 0) {
         rest = html.slice(textEnd)
+        // 如果找到的<标签后面的html满足下面四种情况，说明是在文本中出现了<
+        // 就继续查找下一个<，直到reset不满足跳出循环，再截取真正文本
         while (
           !endTag.test(rest) &&
           !startTagOpen.test(rest) &&
@@ -130,7 +132,6 @@ export function parseHTML (html, options) {
           !conditionalComment.test(rest)
         ) {
           // < in plain text, be forgiving and treat it as text
-          // 如果标签开始表示符（<）存在于文本中，则继续退后textEnd
           next = rest.indexOf('<', 1) // indexOf的第二个参数意为从某个位置开始查找
           if (next < 0) break
           textEnd += next
@@ -192,6 +193,7 @@ export function parseHTML (html, options) {
     html = html.substring(n)
   }
 
+  // 匹配开始标签
   function parseStartTag () {
     const start = html.match(startTagOpen)
     if (start) {
@@ -222,9 +224,11 @@ export function parseHTML (html, options) {
     const unarySlash = match.unarySlash
 
     if (expectHTML) {
+      // 这里是因为根据W3C规范，phrasingTag元素都能放在p标签内部构成段落，不能放在p标签内部的需要手动结束p标签
       if (lastTag === 'p' && isNonPhrasingTag(tagName)) {
         parseEndTag(lastTag)
       }
+      // 意思是只要输写开标签，Vue会自动补全闭标签
       if (canBeLeftOpenTag(tagName) && lastTag === tagName) {
         parseEndTag(tagName)
       }
@@ -250,6 +254,7 @@ export function parseHTML (html, options) {
       }
     }
 
+    // 非闭合标签
     if (!unary) {
       stack.push({ tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs, start: match.start, end: match.end })
       lastTag = tagName
@@ -279,6 +284,8 @@ export function parseHTML (html, options) {
       pos = 0
     }
 
+    // 如果i大于pos，说明有标签未闭合，我们报错提示
+    // 如果pos小于0，说明有闭合标签找不到开始标签，那么针对br和p标签的情况手动生成开始标签
     if (pos >= 0) {
       // Close all the open elements, up the stack
       for (let i = stack.length - 1; i >= pos; i--) {

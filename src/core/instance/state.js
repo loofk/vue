@@ -256,11 +256,11 @@ function createComputedGetter (key) {
   return function computedGetter () {
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
-      // 计算属性在这里才对watcher进行求值
+      // 对计算属性进行求值并缓存到computedWatcher的value属性中，在求值期间调用了用户定义函数进行了依赖收集
       if (watcher.dirty) {
         watcher.evaluate()
       }
-      // 这里等于渲染watcher订阅了computed watcher的变化
+      // 由于上面的依赖收集，计算属性中的所有依赖都被收集到computedWatcher中，现在找出computedWatcher的deps，全部添加当前依赖该computed的watcher
       if (Dep.target) {
         watcher.depend()
       }

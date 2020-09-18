@@ -179,6 +179,7 @@ export default class Watcher {
    */
   update () {
     /* istanbul ignore else */
+    // 这里表示每次依赖更新时computed都重新求值，不管最终计算值有无变化
     if (this.lazy) {
       this.dirty = true
     } else if (this.sync) { // 设置sync属性会立即执行watcher的run函数，在同一个Tick更新视图以及触发回调

@@ -65,7 +65,7 @@ export function createASTElement (
   parent: ASTElement | void
 ): ASTElement {
   return {
-    type: 1, // AST元素类型
+    type: 1, // AST元素类型，1表示普通元素，2表示表达式，3表示纯文本
     tag, // 标签名
     attrsList: attrs, // 属性列表
     attrsMap: makeAttrsMap(attrs), // 属性映射表
@@ -146,7 +146,9 @@ export function parse (
       }
     }
     if (currentParent && !element.forbidden) {
-      // TODO 这里处理当前元素的v-else-if和v-else属性为什么是在当前元素的前一个元素对象的条件属性上添加当前元素的elseif属性
+      // 这里处理当前元素的v-else-if和v-else属性，因为这时我们需要通过parent节点找到其children数组中的最后一个节点，也就是当前节点的上一个节点
+      // 为当前节点的前一个节点添加ifConditions条件
+      // 如果前一个节点没有if属性则会报错
       if (element.elseif || element.else) {
         processIfConditions(element, currentParent)
       } else {
@@ -157,6 +159,7 @@ export function parse (
           const name = element.slotTarget || '"default"'
           ;(currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element
         }
+        // 只有当前节点无elseif或者else属性才被加到children中
         // 如果发现currentParent存在，就把当前元素放入父元素的children列表
         // 同时把当前元素的parent指向currentParent
         currentParent.children.push(element)
