@@ -87,6 +87,7 @@ export function genElement (el: ASTElement, state: CodegenState): string {
         children ? `,${children}` : '' // children
       })`
     }
+    // 在Web环境中并不会执行transform方法
     // module transforms
     for (let i = 0; i < state.transforms.length; i++) {
       code = state.transforms[i](el, code)
@@ -194,6 +195,7 @@ export function genFor (
   const iterator1 = el.iterator1 ? `,${el.iterator1}` : ''
   const iterator2 = el.iterator2 ? `,${el.iterator2}` : ''
 
+  // 对组件的v-for会要求提供key
   if (process.env.NODE_ENV !== 'production' &&
     state.maybeComponent(el) &&
     el.tag !== 'slot' &&
@@ -291,6 +293,8 @@ export function genData (el: ASTElement, state: CodegenState): string {
       data += `${inlineTemplate},`
     }
   }
+
+  // 清除字符串的尾逗号并加上}构成合法的JSON字符串
   data = data.replace(/,$/, '') + '}'
   // v-bind dynamic argument wrap
   // v-bind with dynamic arguments must be applied using the same v-bind object

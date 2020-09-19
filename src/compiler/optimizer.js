@@ -61,6 +61,7 @@ function markStatic (node: ASTNode) {
       }
     }
     // 这里因为存在v-if、v-else-if、v-else条件的节点并不会被加入到children中，所以需要单独判断其中节点是否是静态的
+    // 从一开始是因为第0个元素v-if 已经在上面被遍历过了
     if (node.ifConditions) {
       for (let i = 1, l = node.ifConditions.length; i < l; i++) {
         const block = node.ifConditions[i].block
