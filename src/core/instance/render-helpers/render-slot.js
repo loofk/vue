@@ -26,6 +26,7 @@ export function renderSlot (
     }
     nodes = scopedSlotFn(props) || fallback
   } else {
+    // 拿到在initRender中定义的$slot并根据slot名称取出对应节点数组
     nodes = this.$slots[name] || fallback
   }
 

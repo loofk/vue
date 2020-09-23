@@ -25,7 +25,7 @@ export default function model (
   if (process.env.NODE_ENV !== 'production') {
     // inputs with type="file" are read only and setting the input's
     // value will throw an error.
-    // 处理的<input type="file" />的v-model情况
+    // 文件属性的input是只读的，不能修改值
     if (tag === 'input' && type === 'file') {
       warn(
         `<${el.tag} v-model="${value}" type="file">:\n` +

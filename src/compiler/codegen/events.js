@@ -39,6 +39,7 @@ const keyNames: { [key: string]: string | Array<string> } = {
 // the listener for .once
 const genGuard = condition => `if(${condition})return null;`
 
+// 修饰符对应的实体代码，Vue帮我们预先写好并插入代码中
 const modifierCode: { [key: string]: string } = {
   stop: '$event.stopPropagation();',
   prevent: '$event.preventDefault();',

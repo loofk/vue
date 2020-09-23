@@ -20,8 +20,8 @@ type PropOptions = {
 
 export function validateProp (
   key: string,
-  propOptions: Object,
-  propsData: Object,
+  propOptions: Object, // 当前组件的props选项的数据对象
+  propsData: Object, // 当前组件的props对象结合父组件中调用时的传值构成的props对象
   vm?: Component
 ): any {
   const prop = propOptions[key]

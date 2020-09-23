@@ -25,6 +25,7 @@ export function resolveSlots (
     if ((child.context === context || child.fnContext === context) &&
       data && data.slot != null
     ) {
+      // 拿到父组件中调用的slot名称
       const name = data.slot
       const slot = (slots[name] || (slots[name] = []))
       if (child.tag === 'template') {
@@ -33,10 +34,12 @@ export function resolveSlots (
         slot.push(child)
       }
     } else {
+      // 未定义名称的统统放到default中
       (slots.default || (slots.default = [])).push(child)
     }
   }
   // ignore slots that contains only whitespace
+  // 删除空白符slot
   for (const name in slots) {
     if (slots[name].every(isWhitespace)) {
       delete slots[name]
