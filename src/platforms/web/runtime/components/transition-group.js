@@ -62,9 +62,12 @@ export default {
     for (let i = 0; i < rawChildren.length; i++) {
       const c: VNode = rawChildren[i]
       if (c.tag) {
+        // 使用v-for指令时，如果不指定key，Vue会在normalizeChildren时加上默认的key，以__vlist为前缀
+        // key存在并且不是Vue默认生成的key
         if (c.key != null && String(c.key).indexOf('__vlist') !== 0) {
           children.push(c)
           map[c.key] = c
+          // 对每个子节点都赋予定义在transition-group上的属性
           ;(c.data || (c.data = {})).transition = transitionData
         } else if (process.env.NODE_ENV !== 'production') {
           const opts: ?VNodeComponentOptions = c.componentOptions
@@ -110,6 +113,7 @@ export default {
     // force reflow to put everything in position
     // assign to this to avoid being removed in tree-shaking
     // $flow-disable-line
+    // 通过访问offsetHeight触发浏览器重绘
     this._reflow = document.body.offsetHeight
 
     children.forEach((c: VNode) => {
@@ -133,6 +137,7 @@ export default {
   },
 
   methods: {
+    // 检测节点是否定义了moveclass并且class实现和过渡动画相关
     hasMove (el: any, moveClass: string): boolean {
       /* istanbul ignore if */
       if (!hasTransition) {

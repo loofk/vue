@@ -219,6 +219,8 @@ export function createPatchFunction (backend) {
   function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data
     if (isDef(i)) {
+      // keep-alive组件的render函数不生成vnode，它返回内部第一个组件的vnode
+      // 这个组件vnode在data中有一个keepAlive属性为true
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive
       // 执行组件内的init钩子函数
       if (isDef(i = i.hook) && isDef(i = i.init)) {

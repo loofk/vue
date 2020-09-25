@@ -152,6 +152,9 @@ export function parse (
       if (element.elseif || element.else) {
         processIfConditions(element, currentParent)
       } else {
+        // 2.6版本之前，如果一个ast元素具有slotScope属性，说明其是作用域插槽
+        // 2.6版本之后，作用域插槽和具名插槽都走这个逻辑
+        // 把其赋值到父元素的scopedSlots属性中
         if (element.slotScope) {
           // scoped slot
           // keep it in the children list so that v-else(-if) conditions can
@@ -688,8 +691,8 @@ function processSlotContent (el) {
   }
 
   // 2.6 v-slot syntax
-  // 2.6以后的新语法，使用slot标签的name属性实现具名插槽
-  // 或者在template标签上使用v-slot指令实现具名插槽
+  // 2.6以后的新语法，在子组件使用slot标签的name属性实现具名插槽
+  // 在父组件template标签上使用v-slot指令实现具名插槽
   if (process.env.NEW_SLOT_SYNTAX) {
     if (el.tag === 'template') {
       // v-slot on <template>

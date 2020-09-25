@@ -92,6 +92,7 @@ export default {
     }
 
     // filter out text nodes (possible whitespaces)
+    // 过滤文本节点
     children = children.filter(isNotTextNode)
     /* istanbul ignore if */
     if (!children.length) {
@@ -99,6 +100,7 @@ export default {
     }
 
     // warn multiple elements
+    // 禁止transition中包裹多个元素
     if (process.env.NODE_ENV !== 'production' && children.length > 1) {
       warn(
         '<transition> can only be used on a single element. Use ' +

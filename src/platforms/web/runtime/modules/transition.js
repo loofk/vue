@@ -76,6 +76,7 @@ export function enter (vnode: VNodeWithData, toggleDisplay: ?() => void) {
     return
   }
 
+  // 取过渡类名
   const startClass = isAppear && appearClass
     ? appearClass
     : enterClass
@@ -86,6 +87,7 @@ export function enter (vnode: VNodeWithData, toggleDisplay: ?() => void) {
     ? appearToClass
     : enterToClass
 
+  // 取过渡钩子函数
   const beforeEnterHook = isAppear
     ? (beforeAppear || beforeEnter)
     : beforeEnter
@@ -110,6 +112,7 @@ export function enter (vnode: VNodeWithData, toggleDisplay: ?() => void) {
   }
 
   const expectsCSS = css !== false && !isIE9
+  // JS钩子可以传入第二个参数done表示用户决定什么时候结束
   const userWantsControl = getHookArgumentsLength(enterHook)
 
   const cb = el._enterCb = once(() => {

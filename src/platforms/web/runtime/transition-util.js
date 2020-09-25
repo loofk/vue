@@ -14,6 +14,7 @@ export function resolveTransition (def?: string | Object): ?Object {
     if (def.css !== false) {
       extend(res, autoCssTransition(def.name || 'v'))
     }
+    // 如果属性中指定了css类名，覆盖Vue设置的类名
     extend(res, def)
     return res
   } else if (typeof def === 'string') {
